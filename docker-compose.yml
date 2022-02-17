@@ -1,0 +1,74 @@
+version: "3.1"
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  pg_data: null
+
+services:
+  db_mariadb:
+    # restart: always
+    image: "mariadb:10.4"
+    container_name: ${PROJECT_NAME}-db_mysql
+    working_dir: /application
+    volumes:
+      - ".:/application"
+    environment:
+      - MYSQL_ROOT_PASSWORD=8t7K3hoyMaGx2Gd9tvc4g0i7oPxII0VHE0EpkpKkVdiEuGR2J5eNv5HttM4sLm
+      - MYSQL_DATABASE=main_db
+      - MYSQL_USER=root
+    ports:
+      - "1028:3306"
+    networks:
+      - app-network
+  #
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_ARBITRARY=1
+    networks:
+      - app-network
+
+  webserver:
+    # restart: always
+    image: "nginx:latest"
+    container_name: ${PROJECT_NAME}-webserver
+    working_dir: /application
+    volumes:
+      - "./app:/application"
+      # - './app_admin:/application_admin'
+      - "./phpdocker/nginx:/etc/nginx/conf.d"
+    ports:
+      - "80:80"
+      - "8010:8010"
+      - "443:433"
+    networks:
+      - app-network
+  #
+
+  php-fpm:
+    # restart: always
+    build:
+      context: .
+      dockerfile: phpdocker/php-fpm-node/Dockerfile
+    container_name: ${PROJECT_NAME}-php-fpm-node
+    working_dir: /application
+    environment:
+      XDEBUG_CONFIG: remote_host=host.docker.internal. remote_enable=1
+      PHP_IDE_CONFIG: serverName=Docker
+    env_file:
+      - .env
+    ports:
+      - "9000:9000"
+    volumes:
+      - "./app:/application"
+      # - "./phpdocker/php-fpm-node/ini:/etc/php/8.0/fpm/php"
+    links:
+      - db_mariadb
+      # - pgbouncer
+    networks:
+      - app-network
