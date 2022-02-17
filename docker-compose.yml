@@ -16,7 +16,7 @@ services:
     volumes:
       - ".:/application"
     environment:
-      - MYSQL_ROOT_PASSWORD=8t7K3hoyMaGx2Gd9tvc4g0i7oPxII0VHE0EpkpKkVdiEuGR2J5eNv5HttM4sLm
+      - MYSQL_ROOT_PASSWORD=test
       - MYSQL_DATABASE=main_db
       - MYSQL_USER=root
     ports:
